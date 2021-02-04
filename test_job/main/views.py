@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Deals
+from .models import Deals, CsvFiles
 from rest_framework import routers, serializers, viewsets
 
 
@@ -17,3 +17,14 @@ class DealsSerializer(serializers.HyperlinkedModelSerializer):
 class DealsViewSet(viewsets.ModelViewSet):
     queryset = Deals.objects.all()
     serializer_class = DealsSerializer
+
+
+class CsvFilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CsvFiles
+        fields = ('title', 'file')
+
+
+class CsvFilesViewSet(viewsets.ModelViewSet):
+    queryset = CsvFiles.objects.all()
+    serializer_class = CsvFilesSerializer

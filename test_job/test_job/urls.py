@@ -14,14 +14,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
-from main.views import DealsViewSet
+from main.views import DealsViewSet, CsvFilesViewSet
 from django.contrib import admin
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers
 
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'Deals', DealsViewSet)
+router.register(r'Files', CsvFilesViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
