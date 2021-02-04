@@ -7,7 +7,7 @@ class Deals(models.Model):
     item = models.CharField(max_length=30)
     total = models.IntegerField()
     quantity = models.IntegerField()
-    date = date = models.DateTimeField()
+    date = models.DateTimeField()
 
 
 class CsvFiles(models.Model):
