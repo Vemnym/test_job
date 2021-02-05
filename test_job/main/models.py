@@ -9,7 +9,31 @@ class Deals(models.Model):
     quantity = models.IntegerField()
     date = models.DateTimeField()
 
+    def __str__(self):
+        return self.name
+
 
 class CsvFiles(models.Model):
-    title = models.CharField(max_length=30)
     file = models.FileField(upload_to='files', max_length=100, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Gems(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
+
+class Clients(models.Model):
+    username = models.CharField(max_length=30)
+    spent_money = models.IntegerField()
+    gems = models.ManyToManyField(Gems)
+
+    def __str__(self):
+        return self.name
+
+
+
