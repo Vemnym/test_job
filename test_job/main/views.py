@@ -66,7 +66,10 @@ class CsvFilesSerializer(serializers.ModelSerializer):
 
 
         dir_path = 'files'
-        shutil.rmtree(dir_path)
+        try:
+            shutil.rmtree(dir_path)
+        except:
+            pass
 
         file = self.Meta.model(**validated_data)
         file.save()
@@ -105,6 +108,23 @@ class CsvFilesSerializer(serializers.ModelSerializer):
                 gem_model = Gems(name=gem)
                 gem_model.save()
                 client_model.gems.add(gem_model)
+
+        gems_correct = list(Clients.objects.all().order_by('-spent_money')[:5])
+        gems_list = []
+
+        for line in gems_correct:
+            for gems in list(line.gems.all().values("name")):
+                gems_list.append(gems['name'])
+        print(gems_list)
+
+        gems_list = list(set([x for x in gems_list if gems_list.count(x) == 1]))
+        print(gems_list)
+
+        # for line in gems_correct:
+        #     for gems in list(line.gems.all().values("name")):
+        for item in gems_list:
+            Gems.objects.filter(name=item).delete()
+
 
             # print(Gems.objects.get(client=Clients.objects.get(username=client)).client.username)
 
