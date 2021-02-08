@@ -2,12 +2,7 @@ import re
 import shutil
 import csv
 import os
-
-from django.conf.global_settings import MEDIA_URL, MEDIA_ROOT
 from rest_framework import serializers, status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
 from .models import CsvFiles, Clients, Gems, Deals
 
 
@@ -37,7 +32,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         fields = ["deals", ]
 
     def create(self, validated_data):
-        CsvFiles.objects.all().delete()
+        CsvFiles.objects.all().delete()  # При загрузке нового файла, удаляем все предыдущиие данные
         Deals.objects.all().delete()
         Gems.objects.all().delete()
         Clients.objects.all().delete()
@@ -48,7 +43,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
             pass
 
         pattern = r"csv$"
-        if re.search(pattern, "{}".format(validated_data['deals'])):
+        if re.search(pattern, "{}".format(validated_data['deals'])):  # Проверяем формат файла
             deals = self.Meta.model(**validated_data)
             deals.save()
         else:
@@ -75,7 +70,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         reader = csv.reader(f)
         next(reader)
         try:
-            for row in reader:
+            for row in reader:  # Считываем данные в таблицу
                 Deals(
                     customer=row[0],
                     item=row[1],
@@ -96,13 +91,13 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         for customer in customers:
             clients.append(customer["customer"])
 
-        for client in set(clients):
+        for client in set(clients):  # Считаем сумму сделок для каждого клиента
             gems = []
             total_sum = 0
             client_query = list(Deals.objects.filter(customer=client))
             for query in client_query:
                 total_sum += query.total
-                gems.append(query.item)
+                gems.append(query.item)  # Сохраняем список товаров купленных клиентом
 
             client_model = Clients(username=client,
                                    spent_money=total_sum)
@@ -112,7 +107,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
                 gem_model.save()
                 client_model.gems.add(gem_model)
 
-        gems_correct = list(Clients.objects.all().order_by('-spent_money')[:5])
+        gems_correct = list(Clients.objects.all().order_by('-spent_money')[:5])  # Корректируем поле gems
         gems_list = []
 
         for line in gems_correct:
