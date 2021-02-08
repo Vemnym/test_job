@@ -10,6 +10,7 @@ from .serializers import ClientsSerializer, GemsSerializer, CsvFilesSerializer
 class ClientsViewSet(viewsets.ModelViewSet):
     queryset = Clients.objects.all().order_by('-spent_money')[:5]
     serializer_class = ClientsSerializer
+    http_method_names = ['get']
 
 
 class GemsViewSet(viewsets.ModelViewSet):

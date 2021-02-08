@@ -1,3 +1,4 @@
+from django.conf.global_settings import MEDIA_URL
 from django.db import models
 
 
@@ -9,12 +10,9 @@ class Deals(models.Model):
     quantity = models.IntegerField()
     date = models.DateTimeField()
 
-    def __str__(self):
-        return self.name
-
 
 class CsvFiles(models.Model):
-    file = models.FileField(upload_to='files', max_length=100, blank=True)
+    deals = models.FileField(upload_to=MEDIA_URL, max_length=100, blank=True)
 
     def __str__(self):
         return self.name
@@ -31,9 +29,6 @@ class Clients(models.Model):
     username = models.CharField(max_length=30)
     spent_money = models.IntegerField()
     gems = models.ManyToManyField(Gems)
-
-    def __str__(self):
-        return self.name
 
 
 

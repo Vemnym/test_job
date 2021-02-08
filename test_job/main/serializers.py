@@ -1,7 +1,13 @@
+import re
 import shutil
 import csv
 import os
-from rest_framework import serializers
+
+from django.conf.global_settings import MEDIA_URL, MEDIA_ROOT
+from rest_framework import serializers, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from .models import CsvFiles, Clients, Gems, Deals
 
 
@@ -24,9 +30,11 @@ class ClientsSerializer(serializers.ModelSerializer):
 
 
 class CsvFilesSerializer(serializers.ModelSerializer):
+    deals = serializers.FileField(allow_empty_file=False, use_url=False)
+
     class Meta:
         model = CsvFiles
-        fields = ("id", 'file')
+        fields = ["deals", ]
 
     def create(self, validated_data):
         CsvFiles.objects.all().delete()
@@ -35,28 +43,55 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         Clients.objects.all().delete()
 
         try:
-            shutil.rmtree('files')
+            shutil.rmtree("main\media")
         except:
             pass
 
-        file = self.Meta.model(**validated_data)
-        file.save()
+        pattern = r"csv$"
+        if re.search(pattern, "{}".format(validated_data['deals'])):
+            deals = self.Meta.model(**validated_data)
+            deals.save()
+        else:
+            error = {'Status': 'Error',
+                     'Desc': '<Неверный формат файла> - в процессе обработки файла произошла ошибка.'}
+            raise serializers.ValidationError(error)
 
-        workpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        f = open(os.path.join(workpath, "files/{}".format(validated_data['file'])), encoding='utf-8')
+        workpath = "main\media"
+        nameoffile = str(validated_data['deals']).replace(" — ", "__")
+
+        try:
+            f = open(os.path.join(workpath, "{}".format(nameoffile)), encoding='utf-8')
+        except FileNotFoundError as e:
+            error = {'Status': "Error",
+                     "Desc": "<{}>- в процессе обработки файла произошла ошибка.".format(e.args)
+                     if len(e.args) > 0 else 'Unknown Error'}
+            raise serializers.ValidationError(error)
+        except Exception as e:
+            error = {'Status': "Error",
+                     "Desc": "<{}>- в процессе обработки файла произошла ошибка.".format(",".join(e.args))
+                     if len(e.args) > 0 else 'Unknown Error'}
+            raise serializers.ValidationError(error)
+
         reader = csv.reader(f)
-        for row in reader:
-            _, created = Deals.objects.get_or_create(
-                customer=row[0],
-                item=row[1],
-                total=row[2],
-                quantity=row[3],
-                date=row[4]
-            )
+        next(reader)
+        try:
+            for row in reader:
+                Deals(
+                    customer=row[0],
+                    item=row[1],
+                    total=row[2],
+                    quantity=row[3],
+                    date=row[4]
+                ).save()
+        except Exception as e:
+            error = {'Status': "Error",
+                     "Desc": "<{}>- в процессе обработки файла произошла ошибка.".format(e.args)
+                     if len(e.args) > 0 else 'Unknown Error'}
+            raise serializers.ValidationError(error)
+
         f.close()
 
         customers = Deals.objects.all().values("customer")
-
         clients = []
         for customer in customers:
             clients.append(customer["customer"])
@@ -89,4 +124,4 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         for item in gems_list:
             Gems.objects.filter(name=item).delete()
 
-        return file
+        return deals
