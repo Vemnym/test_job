@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  test_job:
+    build: test_job/
+    restart: always
+    ports:
+      - 8000:8000
