@@ -38,7 +38,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
         Clients.objects.all().delete()
 
         try:
-            shutil.rmtree("main\media")
+            shutil.rmtree("main/media")
         except:
             pass
 
@@ -51,7 +51,7 @@ class CsvFilesSerializer(serializers.ModelSerializer):
                      'Desc': '<Неверный формат файла> - в процессе обработки файла произошла ошибка.'}
             raise serializers.ValidationError(error)
 
-        workpath = "main\media"
+        workpath = "main/media"
         nameoffile = str(validated_data['deals']).replace(" — ", "__")
 
         try:
